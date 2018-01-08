@@ -1,0 +1,281 @@
+.detailDialog *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.detailDialog *::-webkit-scrollbar-button {
+    background: #ddd;
+    width: 0px;
+    height: 0px;
+}
+
+.detailDialog *::-webkit-scrollbar-track-piece {
+    background: #ddd;
+    border-radius: 6px;
+}
+
+.detailDialog *::-webkit-scrollbar-thumb {
+    background: #999;
+    border-radius: 6px;
+}
+
+.detailDialog * {
+    outline: 0 !important;
+}
+
+.detailDialog,
+.detailDialog div {
+    box-sizing: border-box;
+}
+
+.avaliable {
+    display: block!important;
+}
+
+ul,
+menu,
+dir {
+    -webkit-margin-before: 0px;
+    -webkit-margin-after: 0px;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-padding-start: 0px;
+}
+
+.detailDialog-Mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 21000;
+    background-color: rgba(0, 0, 0, .55);
+    display: none;
+}
+
+ul,
+li {
+    list-style: none;
+}
+
+.detailDialog {
+    color: rgba(0, 0, 0, 0.87);
+    background-color: rgb(255, 255, 255);
+    border-radius: 2px;
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 22000;
+    width: 700px;
+    height: 550px;
+    margin: 0 auto;
+    padding: 20px;
+    flex-direction: column;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .2), 0 1px 1px 0 rgba(0, 0, 0, .14), 0 2px 1px -1px rgba(0, 0, 0, .12);
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.detailDialog .detailDialog-content {
+    margin-top: 20px;
+    width: 100%;
+    height: 80%;
+    overflow-x: auto;
+}
+
+.detailDialog .detailDialog-content .left-dom {
+    display: inline-block;
+    height: 50px;
+    overflow: hidden;
+    line-height: 50px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.detailDialog .detailDialog-content .right-dom {
+    display: inline-block;
+    width: 45%;
+    height: 50px;
+    line-height: 50px;
+    margin-left: 5%;
+}
+
+.detailDialog .detailDialog-content .right-dom>input {
+    height: 30px;
+    margin-left: 5%;
+    font-size: 16px;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    width: 100%;
+}
+
+.detailDialog .detailDialog-content .right-dom>input:disabled {
+    background-color: #fff;
+}
+
+.detailDialog .detailDialog-content .chkbox.checked.required:after {
+    content: '*';
+    color: #fff;
+    right: 5px;
+    top: 3px;
+    position: absolute;
+    font-size: 150%;
+}
+
+.detailDialog .detailDialog-content .right-dom>input:focus {
+    border-bottom: 1px solid #178efe;
+}
+
+.detailDialog .detailDialog-content .right-dom>input.error {
+    border-bottom: 1px solid #d9534f;
+}
+
+.detailDialog .dialog-button {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.detailDialog .rdobox,
+.detailDialog .chkbox {
+    height: 100%;
+    cursor: pointer;
+    padding-right: 20px;
+}
+
+.detailDialog .selected-msg {
+    margin-bottom: 20px;
+    color: #359a29;
+    font-size: 16px;
+    height: 20px;
+    text-align: center;
+}
+
+.detailDialog .err-msg {
+    margin: 10px 0;
+    color: red;
+    height: 20px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.inject .dialog-button button:nth-child(odd) {
+    margin-right: 40px;
+}
+
+.inject .dialog-button button:nth-child(even) {
+    margin-left: 40px;
+}
+
+.inject .btn,
+.detailDialog .btn {
+    font-weight: 300;
+    margin: 0 10px 10px 0;
+    transition: all 0.15s;
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.428571429;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.inject .btn.btn-lg,
+.detailDialog .btn.btn-lg {
+    padding: 10px 16px;
+    font-size: 18px;
+    line-height: 1.33;
+    border-radius: 6px;
+}
+
+.inject .btn.btn-sm,
+.detailDialog .btn.btn-sm {
+    font-size: 12px;
+    height: 25px;
+    line-height: 25px;
+    padding: 0 10px;
+}
+
+.inject .success-btn,
+.detailDialog .success-btn {
+    color: #60c560;
+    border: 1px solid #60c560;
+}
+
+.inject .success-btn:hover,
+.inject .success-btn.active,
+.detailDialog .success-btn:hover,
+.detailDialog .success-btn.active {
+    background: #60c560;
+    color: white;
+}
+
+.inject .primary-btn,
+.detailDialog .primary-btn {
+    color: #1B9AF7;
+    border: 1px solid #1B9AF7;
+}
+
+.inject .primary-btn:hover,
+.inject .primary-btn.active,
+.detailDialog .primary-btn:hover,
+.detailDialog .primary-btn.active
+{
+    background: #1B9AF7;
+    color: white;
+}
+
+.inject .danger-btn,
+.detailDialog .danger-btn {
+    color: #d9534f;
+    border: 1px solid #d9534f;
+}
+
+.inject .danger-btn:hover,
+.inject .danger-btn.active,
+.detailDialog .danger-btn:hover,
+.detailDialog .danger-btn.active {
+    background: #d9534f;
+    color: white;
+}
+
+#dialogZ {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    z-index: 20000;
+    background-color: rgba(50, 50, 50, .65);
+    transition: width .6s;
+    font-size: 0px;
+    color: #fff;
+}
+
+#dialogZ.open {
+    width: 120px;
+    font-size: 20px;
+}
+
+#dialogZ.open>ul>li {
+    text-align: center;
+    padding: 20px 0px;
+    letter-spacing: 10px;
+    cursor: default;
+    border-bottom: 2px solid transparent;
+    transition: all .8s;
+}
+
+#dialogZ.open>ul>li:hover {
+    border-bottom: 2px solid #fff;
+    padding-left: 30px;
+}
