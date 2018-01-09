@@ -9,7 +9,7 @@
         initPage(xhr.status);
       })
       .fail(err => {
-        console.log(err);
+        console.log(err.responseText);
       });
   });
 
@@ -21,7 +21,12 @@
     }
   }
 
+<<<<<<< HEAD:js/option.js
   
+=======
+  //获取域列表
+  let getDomains = $.get(almUrl + restApiUrl + "domains");
+>>>>>>> b1d225370ec71443c202d34542bd1d9961a08c0f:js-temp/option.js
 
   function getDomains() {
     $.get(almUrl + restApiUrl + "domains")
