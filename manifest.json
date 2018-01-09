@@ -15,7 +15,7 @@
     },
     "manifest_version": 2,
     "name": "SIMPLE QC",
-    "permissions": ["downloads","webRequest","http://192.168.42.50:8088/*"],
+    "permissions": ["downloads", "webRequest", "http://192.168.42.50:8088/*"],
     "version": "1.0.0",
     "options_page": "option.html"
 }

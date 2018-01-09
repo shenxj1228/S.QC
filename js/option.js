@@ -15,18 +15,16 @@
 
   function initPage(status) {
     if (status === 200) {
-      listDomains();
+      getDomains();
     } else if (status === 401) {
     } else {
     }
   }
 
-  //获取域列表
-  let getDomains = $.get(almUrl + restApiUrl + "domains");
   
 
-  function listDomains() {
-    getDomains
+  function getDomains() {
+    $.get(almUrl + restApiUrl + "domains")
       .done((data, textStatus, xhr) => {
         $("#areaField").empty();
         $(data)
