@@ -9,7 +9,7 @@
         initPage(xhr.status);
       })
       .fail(err => {
-        console.log(err);
+        console.log(err.responseText);
       });
   });
 
@@ -23,7 +23,6 @@
 
   //获取域列表
   let getDomains = $.get(almUrl + restApiUrl + "domains");
-  
 
   function listDomains() {
     getDomains
