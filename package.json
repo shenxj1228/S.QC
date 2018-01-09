@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "iview": "^2.8.0",
-    "vue": "^2.5.13"
+    "element-react": "^1.4.5",
+    "react": "^16.2.0"
   }
 }
