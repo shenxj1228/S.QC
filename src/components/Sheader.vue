@@ -1,38 +1,33 @@
-<style scoped>
-.layout {
-    border: 1px solid #d7dde4;
-    background: #f5f7f9;
-    position: relative;
-    border-radius: 4px;
-    overflow: hidden;
-}
+ <style scoped>
 .layout-logo {
-    width: 100px;
-    height: 30px;
-    color: white;
-    float: left;
-    position: relative;
-    left: 20px;
+  width: 100px;
+  height: 30px;
+  color: white;
+  float: left;
+  position: relative;
+  left: 20px;
+  user-select: none;
 }
 .layout-nav {
-    width: 420px;
-    margin: 0 auto;
-    margin-right: 20px;
-}
-.layout-footer-center {
-    text-align: center;
+  width: 420px;
+  margin: 0 auto;
+  margin-right: 20px;
 }
 </style>
-
+ 
 <template>
   <Header>
     <Menu mode="horizontal" theme="dark" active-name="0">
       <h1 class="layout-logo">S.QC</h1>
       <div class="layout-nav">
-       <Submenu name="3">
+<MenuItem name="1">
+<Icon type="android-refresh"></Icon>
+刷  新
+</MenuItem>
+       <Submenu name="2">
             <template slot="title">
-                <Icon type="stats-bars"></Icon>
-                统计分析
+<Icon type="ios-shuffle-strong"></Icon>
+                切换项目
             </template>
             <MenuGroup title="使用">
                 <MenuItem name="3-1">新增和启动</MenuItem>
@@ -44,6 +39,11 @@
                 <MenuItem name="3-5">流失用户</MenuItem>
             </MenuGroup>
         </Submenu>
+<MenuItem name="3">
+<Icon type="android-settings"></Icon>
+设  置
+</MenuItem>
+
       </div>
     </Menu>
   </Header>
@@ -51,9 +51,15 @@
 
 <script>
 export default {
-    name: 'Sheader',
-    data: function() {
-        return {}
-    }
-}
+  name: "Sheader",
+  created: function() {
+    this.$axios
+      .get("http://192.168.42.50:8088/qcbin/authentication-point/authenticate")
+ .then(response => {console.log(response);}, response => {console.log(response);});
+
+  },
+  data: function() {
+    return {};
+  }
+};
 </script>
