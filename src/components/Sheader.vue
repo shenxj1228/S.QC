@@ -1,23 +1,23 @@
  <style scoped>
 .layout-logo {
-  width: 100px;
-  height: 30px;
-  color: white;
-  float: left;
-  position: relative;
-  left: 20px;
-  user-select: none;
+    width: 100px;
+    height: 30px;
+    color: white;
+    float: left;
+    position: relative;
+    left: 20px;
+    user-select: none;
 }
 .layout-nav {
-  width: 420px;
-  margin: 0 auto;
-  margin-right: 20px;
+    width: 420px;
+    margin: 0 auto;
+    margin-right: 20px;
 }
 </style>
  
 <template>
   <Header>
-    <Menu mode="horizontal" theme="dark" active-name="0">
+    <Menu mode="horizontal" theme="dark" active-name="0" @on-select="menuAction">
       <h1 class="layout-logo">S.QC</h1>
       <div class="layout-nav">
 <MenuItem name="1">
@@ -43,7 +43,10 @@
 <Icon type="android-settings"></Icon>
 设  置
 </MenuItem>
-
+<MenuItem name="4" >
+<Icon type="log-out"></Icon>
+注  销
+</MenuItem>
       </div>
     </Menu>
   </Header>
@@ -51,15 +54,35 @@
 
 <script>
 export default {
-  name: "Sheader",
-  created: function() {
-    this.$axios
-      .get("http://192.168.42.50:8088/qcbin/authentication-point/authenticate")
- .then(response => {console.log(response);}, response => {console.log(response);});
+    name: 'Sheader',
 
-  },
-  data: function() {
-    return {};
-  }
-};
+    data: function() {
+        return {}
+    },
+    methods: {
+        menuAction(name) {
+            switch (name) {
+                case '4':
+                    const vm=this;
+                    vm.$http
+                        .get('/qcbin/authentication-point/logout')
+                        .then(
+                            res => {
+                                vm.$router.push({path:'/login'})
+                            },
+                            res => {
+                                console.log(res)
+                            }
+                        )
+                        .catch(err => {
+                            console.log(err)
+                        })
+                    break
+
+                default:
+                    break
+            }
+        }
+    }
+}
 </script>
