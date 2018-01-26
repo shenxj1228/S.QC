@@ -62,6 +62,14 @@ export default {
             }
         }
     },
+    created: function(params) {
+        this.$http.get('/qcbin/rest/is-authenticated').then(
+            response => {
+                this.$router.push({ path: '/' })
+            },
+            response => {}
+        )
+    },
     methods: {
         handleSubmit(name) {
             const vm = this
@@ -71,7 +79,6 @@ export default {
                         .$http({
                             url: '/qcbin/authentication-point/authenticate',
                             method: 'get',
-                            headers:{'X-Requested-With': 'XMLHttpRequest'},
                             auth: {
                                 username: vm.formCustom.account,
                                 password: vm.formCustom.passwd
@@ -80,15 +87,15 @@ export default {
                         .then(
                             res => {
                                 if (res.status === 200) {
-                                  vm.$router.push({path:'/'})
+                                    vm.$router.push({ path: '/' })
                                 }
                             },
                             res => {
-                                console.log(res.headers)
+                                console.log(res)
                             }
                         )
                         .catch(err => {
-                            console.log(333);
+                            console.log(333)
                             vm.$router.go(0)
                         })
                 }

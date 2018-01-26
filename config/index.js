@@ -15,6 +15,9 @@ module.exports = {
         changeOrigin: true,
         pathRewrite: {
           '^/qcbin': '/qcbin'
+        },
+        onProxyRes: function(proxyRes, req, res) {
+          //delete proxyRes.headers['www-authenticate']
         }
       }
     },

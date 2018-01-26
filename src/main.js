@@ -6,14 +6,16 @@ import router from './router'
 import axios from 'axios'
 import iView from 'iview'
 import 'iview/dist/styles/iview.css'
+import $ from 'jquery'
 
 Vue.config.productionTip = false
 Vue.use(iView)
 axios.defaults.withCredentials = true
+
 //axios.defaults.baseURL = 'http://192.168.42.50:8088' /*开发时注释，打包时取消注释 */
 Vue.prototype.$http = axios
+Vue.prototype.jquery = $
 /* eslint-disable no-new */
-Vue.prototype.GLOBAL = { user: { status: false, account: '' } }
 new Vue({
   el: '#app',
   router,
