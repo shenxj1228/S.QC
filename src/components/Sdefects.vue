@@ -19,9 +19,9 @@ import { EventBus } from '../event-bus.js'
 export default {
   name: 'Sdefects',
   created: function() {
-      this.fetchData();
+    this.fetchData()
   },
-  watch:{'$route': 'fetchData'},
+  watch: { $route: 'fetchData' },
   data() {
     return {
       loading: true,

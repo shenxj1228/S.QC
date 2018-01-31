@@ -7,6 +7,8 @@
 <script>
 export default {
   name: 'Sblank',
-  data() {return {}}
+  data() {
+    return {}
+  }
 }
 </script>

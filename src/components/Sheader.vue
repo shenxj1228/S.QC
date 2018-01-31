@@ -84,12 +84,12 @@ export default {
           break
 
         default:
-        let names = name.split('/')
+          let names = name.split('/')
           this.$router.push({
             path: '/defects/' + names[1] + '@' + names.pop()
           })
           EventBus.$emit('show-defects', name)
-          
+
           this.projectName = names.pop()
           this.domainName = names[1]
           break
