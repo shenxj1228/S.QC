@@ -1,11 +1,10 @@
-<style scoped>
+<style scoped >
 .login-form {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
-
 .ivu-form-item {
   padding-top: 2.5em;
 }
