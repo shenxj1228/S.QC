@@ -1,5 +1,8 @@
 <style scoped>
-
+.layout-content {
+    height: 100%;
+   
+}
 </style>
 
 <template>
@@ -11,9 +14,9 @@
 
 <script>
 export default {
-  name: 'Scontent',
-  data() {
-    return {}
-  }
+    name: 'Scontent',
+    data() {
+        return {}
+    }
 }
 </script>

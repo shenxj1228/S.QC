@@ -1,5 +1,5 @@
 <template>
-  <Layout  >
+  <Layout style="height:100%;" >
     <Sheader v-bind:domainList="domains"></Sheader>
     <Scontent></Scontent>
     <Sfooter></Sfooter>  
@@ -25,7 +25,6 @@ export default {
               .find('Domain')
               .each(function() {
                 let dname = vm.jquery(this).attr('Name')
-
                 vm.$http.get('/qcbin/rest/domains/' + dname + '/projects').then(
                   res => {
                     let projects = []

@@ -1,25 +1,23 @@
  <style scoped>
 .layout-logo {
-  width: 500px;
-  height: 30px;
-  color: white;
-  float: left;
-  position: relative;
-  left: 20px;
-  user-select: none;
+    height: 30px;
+    color: white;
+    float: left;
+    position: relative;
+    user-select: none;
 }
 
 .layout-nav {
-  width: 420px;
-  margin: 0 auto;
-  margin-right: 20px;
+    width: 420px;
+    margin: 0 auto;
+    margin-right: 20px;
 }
 </style>
  
 <template>
   <Header>
     <Menu mode="horizontal" theme="dark" active-name="0" @on-select="menuAction">
-      <h1 class="layout-logo"> {{projectName}}</h1>
+      <h1 class="layout-logo">  <router-link style=" color: white;" :to="{ path: '/index'}">S.QC</router-link></h1>
       <div class="layout-nav">
 <MenuItem name="1">
 <Icon type="android-refresh"></Icon>
@@ -51,50 +49,64 @@
 <script>
 import { EventBus } from '../event-bus.js'
 export default {
-  name: 'Sheader',
-  data() {
-    return { projectName: 'S.QC', domainName: '' }
-  },
-  props: ['domainList'],
-  methods: {
-    menuAction(name) {
-      switch (name) {
-        case '1':
-          break
-        case '2':
-          break
-        case '3':
-          this.$router.push({ path: '/setting' })
-          break
-        case '4':
-          const vm = this
-          vm.$http
-            .get('/qcbin/authentication-point/logout')
-            .then(
-              res => {
-                vm.$router.push({ path: '/login' })
-              },
-              res => {
-                console.log(res)
-              }
-            )
-            .catch(err => {
-              console.log(err)
-            })
-          break
+    name: 'Sheader',
+    data() {
+        return {
+            projectName: this.$route.params.dp.split('@')[1],
+            domainName: this.$route.params.dp.split('@')[0]
+        }
+    },
+    props: ['domainList'],
+    methods: {
+        menuAction(name) {
+            switch (name) {
+                case '1':
+                    break
+                case '2':
+                    break
+                case '3':
+                    if (
+                        typeof this.domainName != '' &&
+                        this.projectName != ''
+                    ) {
+                        this.$router.push({
+                            path: `/setting/${this.domainName}@${
+                                this.projectName
+                            }`
+                        })
+                    } else {
+                        alert('请先选择项目')
+                    }
 
-        default:
-          let names = name.split('/')
-          this.$router.push({
-            path: '/defects/' + names[1] + '@' + names.pop()
-          })
-          EventBus.$emit('show-defects', name)
+                    break
+                case '4':
+                    const vm = this
+                    vm.$http
+                        .get('/qcbin/authentication-point/logout')
+                        .then(
+                            res => {
+                                vm.$router.push({ path: '/login' })
+                            },
+                            res => {
+                                console.log(res)
+                            }
+                        )
+                        .catch(err => {
+                            console.log(err)
+                        })
+                    break
 
-          this.projectName = names.pop()
-          this.domainName = names[1]
-          break
-      }
+                default:
+                    let names = name.split('/')
+                    this.projectName = names.pop()
+                    this.domainName = names[1]
+                    this.$router.push({
+                        path: `/defects/${this.domainName}@${this.projectName}`
+                    })
+                    EventBus.$emit('show-defects', name)
+                    break
+            }
+        }
     }
-  }
 }
 </script>
