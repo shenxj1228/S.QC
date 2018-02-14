@@ -10,55 +10,47 @@
 import Sheader from './Sheader'
 import Scontent from './Scontent'
 import Sfooter from './Sfooter'
+import api from '../qc-api'
 
 export default {
-  name: 'Smain',
-  beforeCreate: function(params) {
-    const vm = this
-    vm.domains = []
-    vm.$http.get('/qcbin/rest/is-authenticated').then(
-      response => {
-        vm.$http.get('/qcbin/rest/domains').then(
-          res => {
-            vm
-              .jquery(res.data)
-              .find('Domain')
-              .each(function() {
-                let dname = vm.jquery(this).attr('Name')
-                vm.$http.get('/qcbin/rest/domains/' + dname + '/projects').then(
-                  res => {
-                    let projects = []
-                    vm
-                      .jquery(res.data)
-                      .find('Project')
-                      .each(function() {
-                        projects.push({ label: vm.jquery(this).attr('Name') })
-                      })
-                    vm.domains.push({ label: dname, projects: projects })
-                  },
-                  res => {}
+    name: 'Smain',
+    beforeCreate: function(params) {
+        const vm = this
+        api.isAuthenticated().then(
+            res => {
+                api.getDomains().then(
+                    domainNames => {
+                        domainNames.forEach(function(domainName, index){
+                            api.getProjects(domainName).then(
+                                projectNames => {                                 
+                                    vm.domains.push({
+                                        label: domainName,
+                                        projects: projectNames
+                                    })
+                                },
+                                () => {}
+                            )
+                        })
+                    },
+                    res => {}
                 )
-              })
-          },
-          res => {}
+            },
+            res => {
+                console.log('跳转登录页面')
+                vm.$router.push({ path: '/login' })
+            }
         )
-      },
-      response => {
-        console.log('跳转登录页面')
-        vm.$router.push({ path: '/login' })
-      }
-    )
-  },
-  data() {
-    return {
-      domains: []
+    },
+    data() {
+        return {
+            domains: []
+        }
+    },
+    components: {
+        Sheader,
+        Scontent,
+        Sfooter
     }
-  },
-  components: {
-    Sheader,
-    Scontent,
-    Sfooter
-  }
 }
 </script>
 

@@ -4,13 +4,9 @@
 }
 </style>
 <template>
-<div style="height:100%; display:flex;align-items: center;">
-  <div style="position:absolute;left:60px;top:100px">
-    <h1>{{projectName}}</h1>
-    <section style="font-size:16px;text-indent:2em;">缺陷列表显示字段设置，默认显示顺序是显示字段列表中从下往上。</section>
-  </div>
-
- <Transfer
+<div style="height:100%; text-align:center">
+     
+ <Transfer style="display: inline-block;margin-top:8%;text-align:left"
         :titles="listTitle"
         :data="fields"
         :target-keys="targetKeys"
@@ -22,12 +18,20 @@
     </div>
 </template>
 <script>
+import { EventBus } from '../event-bus.js'
+import api from '../qc-api'
 export default {
     data() {
         return {
             listTitle: ['隐藏字段', '显示字段'],
-            projectName: this.$route.params.dp.split('@')[1],
-            domainName: this.$route.params.dp.split('@')[0],
+            domainName:
+                typeof this.$route.params.dp === 'undefined'
+                    ? ''
+                    : decodeURIComponent(this.$route.params.dp.split('@')[0]),
+            projectName:
+                typeof this.$route.params.dp === 'undefined'
+                    ? ''
+                    : decodeURIComponent(this.$route.params.dp.split('@')[1]),
             fields: [],
             targetKeys: this.getTargetKeys(),
             listStyle: {
@@ -36,49 +40,35 @@ export default {
             }
         }
     },
-    beforeCreate: function() {
-        return this.$http
-            .get(
-                `/qcbin/rest/domains/${
-                    this.$route.params.dp.split('@')[0]
-                }/projects/${
-                    this.$route.params.dp.split('@')[1]
-                }/customization/entities/defect/fields`
-            )
-            .then(
-                res => {
-                    let fieldArray = []
-                    let vm = this
-                    vm
-                        .jquery(res.data)
-                        .find('Field')
-                        .each(function() {
-                            let vtmp = vm.jquery(this)
-                            if (vtmp.find('Active').text() === 'true') {
-                                let tmpObj = {
-                                    key: vtmp.attr('Name'),
-                                    label: vtmp.attr('Label'),
-                                    required: vtmp.find('Required').text(),
-                                    system: vtmp.find('System').text(),
-                                    type: vtmp.find('Type').text(),
-                                    active: vtmp.find('Active').text(),
-                                    editable: vtmp.find('Editable').text(),
-                                    verify: vtmp.find('Verify').text()
-                                }
-                                fieldArray.push(tmpObj)
-                            }
-                        })
-                    this.fields = fieldArray
-                },
-                res => {
-                    vm.$router.push({ path: '/index' })
-                }
-            )
+    created: function() {
+        this.getFields()
+        this.targetKeys = this.getTargetKeys()
+    },
+    mounted: function() {
+        EventBus.$on('change-project', ({ domainName, projectName }) => {
+            this.domainName = domainName
+            this.projectName = projectName
+            this.targetKeys = this.getTargetKeys()
+            this.getFields()
+        })
+    },
+    beforeDestory: function(params) {
+        EventBus.$off('change-project')
     },
     methods: {
+        getFields() {
+            api.getFields(this.domainName, this.projectName).then(
+                data => {
+                    this.fields = data
+                },
+                () => {
+                    this.$router.push({ path: '/index' })
+                }
+            )
+        },
         getTargetKeys() {
             let strogeField = localStorage.getItem(
-                `${this.$route.params.dp}-fileds`
+                `${this.domainName}@${this.projectName}-fileds`
             )
             if (strogeField && strogeField.replace(' ', '') != '') {
                 return JSON.parse(strogeField)
@@ -87,7 +77,7 @@ export default {
         },
         handleChange(newTargetKeys) {
             localStorage.setItem(
-                `${this.$route.params.dp}-fileds`,
+                `${this.domainName}@${this.projectName}-fileds`,
                 JSON.stringify(newTargetKeys)
             )
             this.targetKeys = newTargetKeys === '' ? [] : newTargetKeys
