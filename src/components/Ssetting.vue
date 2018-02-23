@@ -15,7 +15,16 @@
         :operations="['隐 藏','显 示']"
         @on-change="handleChange">
     </Transfer>
+    <div style="margin-top:40px;">        
+        <div style="width:800px;display:inline-block">
+            <Slider  v-model="pageSize" :step="10" :min="10" :max="100" :tip-format="showPageSize" @on-change="changePageSize" show-stops show-tip="hover" ></Slider>
+       <div style="margin: 16px 0">每页显示 <strong>{{pageSize}}</strong> 条</div>
+       
+        </div>
+        
     </div>
+    </div>
+   
 </template>
 <script>
 import { EventBus } from '../event-bus.js'
@@ -37,12 +46,14 @@ export default {
             listStyle: {
                 width: '400px',
                 height: '500px'
-            }
+            },
+            pageSize: 20
         }
     },
     created: function() {
         this.getFields()
         this.targetKeys = this.getTargetKeys()
+        this.pageSize=parseInt(localStorage.getItem(`${this.domainName}@${this.projectName}-pagesize`))||20
     },
     mounted: function() {
         EventBus.$on('change-project', ({ domainName, projectName }) => {
@@ -57,14 +68,14 @@ export default {
     },
     methods: {
         getFields() {
-            api.getFields(this.domainName, this.projectName).then(
-                data => {
+            api
+                .getFields(this.domainName, this.projectName)
+                .then(data => {
                     this.fields = data
-                },
-                () => {
+                })
+                .catch(err => {
                     this.$router.push({ path: '/index' })
-                }
-            )
+                })
         },
         getTargetKeys() {
             let strogeField = localStorage.getItem(
@@ -85,6 +96,15 @@ export default {
 
         renderItem(item) {
             return item.label
+        },
+        showPageSize(val) {
+            return `每页显示【${val}】条`
+        },
+        changePageSize(val) {
+            localStorage.setItem(
+                `${this.domainName}@${this.projectName}-pagesize`,
+                val
+            )
         }
     }
 }

@@ -256,22 +256,34 @@ export default {
                 return
             }
             this.loading = true
-            api.getDefects(this.domainName, this.projectName, this.fields).then(
-                data => {
+            api
+                .getDefects(
+                    this.domainName,
+                    this.projectName,
+                    this.fields,
+                    '',
+                    1,
+                    parseInt(
+                    localStorage.getItem(
+                        `${this.domainName}@${this.projectName}-pagesize`
+                    )
+                )
+                )
+                .then(data => {
                     this.loading = false
                     this.tableData = data.data
-                },
-                res => {
-                    console.log(res)
-                }
-            )
+                })
+                .catch(data => {
+                    console.log('获取缺陷列表失败')
+                })
         },
         buildTableColumns() {
             if (this.fields.length === 0) {
                 return
             }
-            api.getFields(this.domainName, this.projectName).then(
-                fieldObjs => {
+            api
+                .getFields(this.domainName, this.projectName)
+                .then(fieldObjs => {
                     this.columns = this.fields.map(
                         (currentValue, index, array) => {
                             let title = currentValue
@@ -284,9 +296,10 @@ export default {
                             return { title: title, key: currentValue }
                         }
                     )
-                },
-                res => {}
-            )
+                })
+                .catch(res => {
+                    console.log('获取缺陷字段列表失败')
+                })
         }
     }
 }

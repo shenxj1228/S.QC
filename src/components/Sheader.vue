@@ -8,7 +8,7 @@
 }
 
 .layout-nav {
-    width: 420px;
+    width: 520px;
     margin: 0 auto;
     margin-right: 20px;
 }
@@ -52,6 +52,7 @@
 
 <script>
 import { EventBus } from '../event-bus.js'
+import { logout } from '../qc-api'
 export default {
     name: 'Sheader',
     data() {
@@ -92,17 +93,10 @@ export default {
 
                     break
                 case '5':
-                    const vm = this
-                    vm.$http
-                        .get('/qcbin/authentication-point/logout')
-                        .then(
-                            res => {
-                                vm.$router.push({ path: '/login' })
-                            },
-                            res => {
-                                console.log(res)
-                            }
-                        )
+                    logout()
+                        .then(res => {
+                            this.$router.push({ path: '/login' })
+                        })
                         .catch(err => {
                             console.log(err)
                         })

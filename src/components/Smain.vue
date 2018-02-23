@@ -15,31 +15,34 @@ import api from '../qc-api'
 export default {
     name: 'Smain',
     beforeCreate: function(params) {
-        const vm = this
-        api.isAuthenticated().then(
-            res => {
-                api.getDomains().then(
-                    domainNames => {
-                        domainNames.forEach(function(domainName, index){
+        const vm = this        
+        api
+            .isAuthenticated()
+            .then(res => {
+                api
+                    .getDomains()
+                    .then(domainNames => {
+                        domainNames.forEach(function(domainName, index) {
                             api.getProjects(domainName).then(
-                                projectNames => {                                 
+                                projectNames => {
                                     vm.domains.push({
                                         label: domainName,
                                         projects: projectNames
                                     })
-                                },
-                                () => {}
-                            )
+                                }
+                            ).catch(err=>{
+                                console.log('获取项目列表失败')
+                            })
                         })
-                    },
-                    res => {}
-                )
-            },
-            res => {
+                    })
+                    .catch(err => {
+                        console.log('获取域列表失败')
+                    })
+            })
+            .catch(res => {
                 console.log('跳转登录页面')
                 vm.$router.push({ path: '/login' })
-            }
-        )
+            })
     },
     data() {
         return {

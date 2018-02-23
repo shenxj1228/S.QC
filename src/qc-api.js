@@ -2,12 +2,12 @@ import $ from 'jquery'
 import axios from 'axios'
 
 export function getFields(domainName, projectName) {
-  return axios
-    .get(
-      `/qcbin/rest/domains/${domainName}/projects/${projectName}/customization/entities/defect/fields`
-    )
-    .then(
-      res => {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(
+        `/qcbin/rest/domains/${domainName}/projects/${projectName}/customization/entities/defect/fields`
+      )
+      .then(res => {
         let fieldArray = []
         $(res.data)
           .find('Field')
@@ -27,84 +27,136 @@ export function getFields(domainName, projectName) {
               fieldArray.push(tmpObj)
             }
           })
-        return fieldArray
-      },
-      res => {
-        return null
-      }
-    )
+        resolve(fieldArray)
+      })
+      .catch(err => {
+        reject('get fields fail')
+        console.log('get fields fail：')
+        console.log(err)
+      })
+  })
 }
 export function isAuthenticated() {
-  return axios.get('/qcbin/rest/is-authenticated').then(
-    res => {
-      return res
-    },
-    res => {
-      return null
-    }
-  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/qcbin/rest/is-authenticated')
+      .then(res => {
+        resolve('is login')
+      })
+      .catch(err => {
+        reject('no login')
+        console.log('no login:')
+        console.log(err)
+      })
+  })
 }
+export function login(user={account:'',passwd:''}) {
+  return new Promise((resolve, reject) => {
+    axios({
+      url: '/qcbin/authentication-point/authenticate',
+      method: 'get',
+      auth: {
+        username: user.account,
+        password: user.passwd
+      }
+    })
+      .then(res => {
+        if (res.status === 200) {
+          resolve('login success')
+        } else {
+          reject('login fail')
+          console.log('login fail:')
+          console.log(res)
+        }
+      })
+      .catch(err => {
+        reject('login fail')
+        console.log('login fail:')
+        console.log(err)
+      })
+  })
+}
+
+export function logout() {
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/qcbin/authentication-point/logout')
+      .then(res => {
+        resolve('logout success')
+      })
+      .catch(err => {
+        console.log('登出失败')
+        console.log(err);
+        reject(err)
+      })
+  })
+}
+
 export function getDomains() {
-  return axios.get('/qcbin/rest/domains/').then(
-    res => {
-      let domainNames = []
-      $(res.data)
-        .find('Domain')
-        .each(function() {
-          let dname = $(this).attr('Name')
-          domainNames.push(dname)
-        })
-      return domainNames
-    },
-    res => {
-      return null
-    }
-  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/qcbin/rest/domains/')
+      .then(res => {
+        let domainNames = []
+        $(res.data)
+          .find('Domain')
+          .each(function() {
+            let dname = $(this).attr('Name')
+            domainNames.push(dname)
+          })
+        resolve(domainNames)
+      })
+      .catch(err => {
+        reject('get domains fail')
+        console.log('get domains fail:')
+        console.log(err)
+      })
+  })
 }
 export function getProjects(domainName) {
-  return axios.get(`/qcbin/rest/domains/${domainName}/projects`).then(
-    res => {
-      let projectNames = []
-      $(res.data)
-        .find('Project')
-        .each(function() {
-          let pname = $(this).attr('Name')
-          projectNames.push(pname)
-        })
-      return projectNames
-    },
-    res => {
-      return null
-    }
-  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`/qcbin/rest/domains/${domainName}/projects`)
+      .then(res => {
+        let projectNames = []
+        $(res.data)
+          .find('Project')
+          .each(function() {
+            let pname = $(this).attr('Name')
+            projectNames.push(pname)
+          })
+        resolve(projectNames)
+      })
+      .catch(err => {
+        reject('get projectNames fail')
+        console.log('get projectNames fail：')
+        console.log(err)
+      })
+  })
 }
 export function getDefects(
   domainName,
   projectName,
   fields = ['id', 'subject'],
-  query = ''
+  query = '',
+  offset=1,
+  queryNum=20
 ) {
-  return axios
-    .get(
-      `/qcbin/rest/domains/${domainName}/projects/${projectName}/defects?fields=${fields.join(
-        ','
-      )}&query={${query}}`
-    )
-    .then(
-      res => { 
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`/qcbin/rest/domains/${domainName}/projects/${projectName}/defects?fields=${fields.join(',')}&query={${query}}&page-size=${queryNum}&start-index=${offset}`)
+      .then(res => {
         let totNum = $(res.data)[1].attributes[0].value
-        let entitiesData=[]
-        let returnNum=0
+        let entitiesData = []
+        let returnNum = 0
         $(res.data)
           .find('Entity')
           .each(function() {
             let entityData = {}
             fields.forEach((item, index) => {
-              if (
-                $(this)
+              if ($(this)
                   .find(`Field[Name=${item}]`)
-                  .find('Value').length == 0
-              ) {
+                  .find('Value').length == 0) {
                 entityData[item] = ''
               } else {
                 entityData[item] = $(this)
@@ -116,15 +168,25 @@ export function getDefects(
             returnNum++
             entitiesData.push(entityData)
           })
-          return { totNum: totNum, returnNum: returnNum, data: entitiesData }
-      },
-      res => {}
-    )
+        resolve({
+          totNum: totNum,
+          returnNum: returnNum,
+          data: entitiesData
+        })
+      })
+      .catch(err => {
+        reject('get defects fail')
+        console.log('get defects fail:')
+        console.log(err)
+      })
+  })
 }
 export default {
   getFields: getFields,
   isAuthenticated: isAuthenticated,
   getDomains: getDomains,
   getProjects: getProjects,
-  getDefects: getDefects
+  getDefects: getDefects,
+  login: login,
+  logout: logout
 }
