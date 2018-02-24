@@ -15,14 +15,7 @@
         :operations="['隐 藏','显 示']"
         @on-change="handleChange">
     </Transfer>
-    <div style="margin-top:40px;">        
-        <div style="width:800px;display:inline-block">
-            <Slider  v-model="pageSize" :step="10" :min="10" :max="100" :tip-format="showPageSize" @on-change="changePageSize" show-stops show-tip="hover" ></Slider>
-       <div style="margin: 16px 0">每页显示 <strong>{{pageSize}}</strong> 条</div>
-       
-        </div>
-        
-    </div>
+   
     </div>
    
 </template>
@@ -53,7 +46,12 @@ export default {
     created: function() {
         this.getFields()
         this.targetKeys = this.getTargetKeys()
-        this.pageSize=parseInt(localStorage.getItem(`${this.domainName}@${this.projectName}-pagesize`))||20
+        this.pageSize =
+            parseInt(
+                localStorage.getItem(
+                    `${this.domainName}@${this.projectName}-pagesize`
+                )
+            ) || 20
     },
     mounted: function() {
         EventBus.$on('change-project', ({ domainName, projectName }) => {
@@ -96,15 +94,6 @@ export default {
 
         renderItem(item) {
             return item.label
-        },
-        showPageSize(val) {
-            return `每页显示【${val}】条`
-        },
-        changePageSize(val) {
-            localStorage.setItem(
-                `${this.domainName}@${this.projectName}-pagesize`,
-                val
-            )
         }
     }
 }

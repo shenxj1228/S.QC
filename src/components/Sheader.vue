@@ -1,17 +1,5 @@
  <style scoped>
-.layout-logo {
-    height: 30px;
-    color: white;
-    float: left;
-    position: relative;
-    user-select: none;
-}
 
-.layout-nav {
-    width: 520px;
-    margin: 0 auto;
-    margin-right: 20px;
-}
 </style>
  
 <template>

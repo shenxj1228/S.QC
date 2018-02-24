@@ -22,7 +22,8 @@ export function getFields(domainName, projectName) {
                 type: vtmp.find('Type').text(),
                 active: vtmp.find('Active').text(),
                 editable: vtmp.find('Editable').text(),
-                verify: vtmp.find('Verify').text()
+                verify: vtmp.find('Verify').text(),
+                listId: vtmp.find('List-Id').text() || ''
               }
               fieldArray.push(tmpObj)
             }
@@ -50,7 +51,7 @@ export function isAuthenticated() {
       })
   })
 }
-export function login(user={account:'',passwd:''}) {
+export function login(user = { account: '', passwd: '' }) {
   return new Promise((resolve, reject) => {
     axios({
       url: '/qcbin/authentication-point/authenticate',
@@ -86,7 +87,7 @@ export function logout() {
       })
       .catch(err => {
         console.log('登出失败')
-        console.log(err);
+        console.log(err)
         reject(err)
       })
   })
@@ -134,17 +135,53 @@ export function getProjects(domainName) {
       })
   })
 }
+export function getLists(domainName, projectName) {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(
+        `/qcbin/rest/domains/${domainName}/projects/${projectName}/customization/lists`
+      )
+      .then(res => {
+        let lists = []
+        $(res.data).find('List').each(function() {
+          let id = $(this)
+            .find('Id')
+            .text()
+          let name = $(this)
+            .find('Name')
+            .text()
+          let items = []
+          $(this)
+            .find('Item')
+            .each(function() {
+              items.push($(this).attr('Value'))
+            })
+          lists.push({ id: id, name: name, items: items })
+        })
+        resolve(lists)
+      })
+      .catch(err => {
+        console.log('get lists fail:')
+        console.log(err)
+        reject('get lists fail')
+      })
+  })
+}
 export function getDefects(
   domainName,
   projectName,
   fields = ['id', 'subject'],
   query = '',
-  offset=1,
-  queryNum=20
+  offset = 1,
+  queryNum = 20
 ) {
   return new Promise((resolve, reject) => {
     axios
-      .get(`/qcbin/rest/domains/${domainName}/projects/${projectName}/defects?fields=${fields.join(',')}&query={${query}}&page-size=${queryNum}&start-index=${offset}`)
+      .get(
+        `/qcbin/rest/domains/${domainName}/projects/${projectName}/defects?fields=${fields.join(
+          ','
+        )}&query={${query}}&page-size=${queryNum}&start-index=${offset}`
+      )
       .then(res => {
         let totNum = $(res.data)[1].attributes[0].value
         let entitiesData = []
@@ -154,9 +191,11 @@ export function getDefects(
           .each(function() {
             let entityData = {}
             fields.forEach((item, index) => {
-              if ($(this)
+              if (
+                $(this)
                   .find(`Field[Name=${item}]`)
-                  .find('Value').length == 0) {
+                  .find('Value').length == 0
+              ) {
                 entityData[item] = ''
               } else {
                 entityData[item] = $(this)
@@ -188,5 +227,6 @@ export default {
   getProjects: getProjects,
   getDefects: getDefects,
   login: login,
-  logout: logout
+  logout: logout,
+  getLists: getLists
 }

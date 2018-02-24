@@ -5,12 +5,26 @@
 </style>
 <template>
 
-<div style="left:40px;display: block;">
-<h1 style="position:absolute;top:100px;left:40px;">{{projectName}}</h1>  
-     <Table   :loading="loading" :data="tableData" :columns="columns" stripe></Table>
+<div ref="defectview" style="left: 40px;display: block;flex:1">
+   <Form ref="formQuery" :model="formQuery" style="margin:40px;margin-right:180px;" inline :label-width="80">
+        <FormItem :prop="column.key" :label="column.title" v-for="(column,index) in columns" :key="index">
+        <Select  v-if="column.listId!=''&&column.type.indexOf('List')>-1"  v-model="formQuery[column.key]" style="width:140px">
+            <Option v-if="column.listId!=''&&column.type.indexOf('List')>-1" v-for="item in filterList(column.listId)" :value="item" :key="item">{{ item }}
+        </Option>
+        </Select>
+        <DatePicker v-else-if="column.type==='Date'" v-model="formQuery[column.key]" type="daterange" placement="bottom-start" placeholder="选择日期" format="yyyy年MM月dd日" style="width: 240px"></DatePicker>
+        <TimePicker type="timerange" placement="bottom-start" v-model="formQuery[column.key]"  v-else-if="column.type==='DateTime'" format="HH时mm分" placeholder="选择时间" style="width: 112px"></TimePicker>
+        <Input v-else type="text" v-model="formQuery[column.key]" style="width:300px;"  clearable>                
+            </Input>
+        </FormItem>       
+        <FormItem style="display:block;">
+            <Button type="primary" @click="queryDefect">查 询</Button>
+        </FormItem>
+    </Form> 
+   <Table :height="tableHeight"  :loading="loading" :data="tableData" :columns="columns" stripe></Table>
      <div style="margin: 10px;overflow: hidden">
         <div style="float: right;">
-            <Page :total="100" :current="1" @on-change="changePage" ></Page>
+            <Page :total="totNum" :current="1" @on-change="changePage" @on-page-size-change="changePageSize" show-sizer :page-size-opts="[10,20,50,100]" placement="top"></Page>
         </div>
     </div>
     </div>
@@ -34,8 +48,15 @@ export default {
                           `${this.domainName}@${this.projectName}-fileds`
                       )
                   )
-        this.buildTableColumns()
-        this.fetchData()
+        this.getLists()
+            .then(lists => {
+                this.lists = lists
+                this.buildTableColumns()
+                this.fetchData()
+            })
+            .catch(err => {
+                console.log(err)
+            })
     },
     mounted: function() {
         EventBus.$on('change-project', ({ domainName, projectName }) => {
@@ -43,6 +64,8 @@ export default {
             this.projectName = projectName
             this.fetchData()
         })
+        this.tableHeight =
+            this.$refs.defectview.offsetHeight - 210 || this.tableHeight
     },
     beforeDestory: function(params) {
         EventBus.$off('change-project')
@@ -50,6 +73,8 @@ export default {
     watch: { $route: 'fetchData' },
     data() {
         return {
+            formQuery: {},
+            tableHeight: 400,
             domainName:
                 typeof this.$route.params.dp === 'undefined'
                     ? ''
@@ -61,181 +86,11 @@ export default {
             loading: true,
             tableData: [],
             fields: [],
-            columns: [
-                {
-                    title: 'Name',
-                    key: 'name'
-                },
-                {
-                    title: 'Status',
-                    key: 'status',
-                    render: (h, params) => {
-                        const row = params.row
-                        const color =
-                            row.status === 1
-                                ? 'blue'
-                                : row.status === 2 ? 'green' : 'red'
-                        const text =
-                            row.status === 1
-                                ? 'Working'
-                                : row.status === 2 ? 'Success' : 'Fail'
-
-                        return h(
-                            'Tag',
-                            {
-                                props: {
-                                    type: 'dot',
-                                    color: color
-                                }
-                            },
-                            text
-                        )
-                    }
-                }
-            ],
-            tableColumns1: [
-                {
-                    title: 'Name',
-                    key: 'name'
-                },
-                {
-                    title: 'Status',
-                    key: 'status',
-                    render: (h, params) => {
-                        const row = params.row
-                        const color =
-                            row.status === 1
-                                ? 'blue'
-                                : row.status === 2 ? 'green' : 'red'
-                        const text =
-                            row.status === 1
-                                ? 'Working'
-                                : row.status === 2 ? 'Success' : 'Fail'
-
-                        return h(
-                            'Tag',
-                            {
-                                props: {
-                                    type: 'dot',
-                                    color: color
-                                }
-                            },
-                            text
-                        )
-                    }
-                },
-                {
-                    title: 'Portrayal',
-                    key: 'portrayal',
-                    render: (h, params) => {
-                        return h(
-                            'Poptip',
-                            {
-                                props: {
-                                    trigger: 'hover',
-                                    title:
-                                        params.row.portrayal.length +
-                                        'portrayals',
-                                    placement: 'bottom'
-                                }
-                            },
-                            [
-                                h('Tag', params.row.portrayal.length),
-                                h(
-                                    'div',
-                                    {
-                                        slot: 'content'
-                                    },
-                                    [
-                                        h(
-                                            'ul',
-                                            this.tableData[
-                                                params.index
-                                            ].portrayal.map(item => {
-                                                return h(
-                                                    'li',
-                                                    {
-                                                        style: {
-                                                            textAlign: 'center',
-                                                            padding: '4px'
-                                                        }
-                                                    },
-                                                    item
-                                                )
-                                            })
-                                        )
-                                    ]
-                                )
-                            ]
-                        )
-                    }
-                },
-                {
-                    title: 'People',
-                    key: 'people',
-                    render: (h, params) => {
-                        return h(
-                            'Poptip',
-                            {
-                                props: {
-                                    trigger: 'hover',
-                                    title:
-                                        params.row.people.length + 'customers',
-                                    placement: 'bottom'
-                                }
-                            },
-                            [
-                                h('Tag', params.row.people.length),
-                                h(
-                                    'div',
-                                    {
-                                        slot: 'content'
-                                    },
-                                    [
-                                        h(
-                                            'ul',
-                                            this.tableData[
-                                                params.index
-                                            ].people.map(item => {
-                                                return h(
-                                                    'li',
-                                                    {
-                                                        style: {
-                                                            textAlign: 'center',
-                                                            padding: '4px'
-                                                        }
-                                                    },
-                                                    item.n +
-                                                        '：' +
-                                                        item.c +
-                                                        'People'
-                                                )
-                                            })
-                                        )
-                                    ]
-                                )
-                            ]
-                        )
-                    }
-                },
-                {
-                    title: 'Sampling Time',
-                    key: 'time',
-                    render: (h, params) => {
-                        return h('div', 'Almost' + params.row.time + 'days')
-                    }
-                },
-                {
-                    title: 'Updated Time',
-                    key: 'update',
-                    render: (h, params) => {
-                        return h(
-                            'div',
-                            this.formatDate(this.tableData[params.index].update)
-                        )
-                    }
-                }
-            ]
+            queryStr: '',offset: 1,
+            pageSize: 10,
+            totNum: 1000,
+            columns: [],
+            lists: []
         }
     },
     methods: {
@@ -247,11 +102,17 @@ export default {
             d = d < 10 ? '0' + d : d
             return y + '-' + m + '-' + d
         },
-        changePage() {
+        changePage(val) {
             // The simulated data is changed directly here, and the actual usage scenario should fetch the data from the server
-            this.fetchData()
+            this.offset = this.pageSize * (val - 1) + 1
+            this.fetchData(true)
         },
-        fetchData() {
+        changePageSize(val) {
+            this.pageSize = val
+            this.offset = 1
+            this.fetchData(true)
+        },
+        fetchData(isChangePage = false) {
             if (this.fields.length === 0) {
                 return
             }
@@ -261,21 +122,23 @@ export default {
                     this.domainName,
                     this.projectName,
                     this.fields,
-                    '',
-                    1,
-                    parseInt(
-                    localStorage.getItem(
-                        `${this.domainName}@${this.projectName}-pagesize`
-                    )
-                )
+                    this.queryStr,
+                    this.offset,
+                    this.pageSize
                 )
                 .then(data => {
                     this.loading = false
                     this.tableData = data.data
+                    if (!isChangePage) {
+                        this.totNum = parseInt(data.totNum, 10)
+                    }
                 })
                 .catch(data => {
                     console.log('获取缺陷列表失败')
                 })
+        },
+        remoteFilter(value, key, column) {
+            fetchData()
         },
         buildTableColumns() {
             if (this.fields.length === 0) {
@@ -287,19 +150,55 @@ export default {
                     this.columns = this.fields.map(
                         (currentValue, index, array) => {
                             let title = currentValue
+                            let type = ''
+                            let listId = ''
                             fieldObjs.some(function(v) {
                                 if (v.key === currentValue) {
                                     title = v.label
+                                    type = v.type
+                                    listId = v.listId
                                     return true
                                 }
                             })
-                            return { title: title, key: currentValue }
+                            return {
+                                title: title,
+                                key: currentValue,
+                                type: type,
+                                listId: listId
+                            }
                         }
                     )
                 })
                 .catch(res => {
                     console.log('获取缺陷字段列表失败')
                 })
+        },
+        getLists() {
+            return new Promise((resolve, reject) => {
+                api
+                    .getLists(this.domainName, this.projectName)
+                    .then(lists => {
+                        resolve(lists)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
+        filterList(id) {
+            if (id != '') {
+                let result = this.lists.filter(function(val) {
+                    return val.id == id
+                })
+                return result[0].items
+            } else {
+                return []
+            }
+        },
+        queryDefect(){
+             Object.keys(this.formQuery).forEach((val,index)=>{
+                 console.log(this.formQuery[val]);
+             })
         }
     }
 }
