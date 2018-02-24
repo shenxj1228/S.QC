@@ -197,7 +197,9 @@ export default {
         },
         queryDefect(){
              Object.keys(this.formQuery).forEach((val,index)=>{
-                 console.log(this.formQuery[val]);
+                 if(Array.isArray(this.formQuery[val])){
+                     
+                 }
              })
         }
     }
