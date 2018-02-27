@@ -17,5 +17,6 @@ export default {
     position: relative;
     border-radius: 4px;
     height: 100%;
+    
 }
 </style>

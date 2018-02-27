@@ -1,5 +1,6 @@
 <template>
-  <Layout  style="height:100%; display:flex;flex-direction:column;justify-content: flex-start" >
+<div class="layout" style="height:100%;" >
+  <Layout  style="height:100%;" >
     <Header>
           <Menu mode="horizontal" theme="dark" active-name="0" @on-select="menuAction">
       <h1 class="layout-logo">  <router-link style=" color: white;" :to="{ path: '/index'}">S.QC</router-link><span style="font-size:18px" v-if="projectName!=''"> —— {{projectName}}</span></h1>
@@ -36,11 +37,12 @@
     <Content style="display:flex;flex-direction:column" ><router-view/></Content>
     <Footer >footer</Footer>  
   </Layout>
+  </div>
 </template>
 
-<script> 
+<script>
 import api from '../qc-api'
-
+import EventBus from '../event-bus'
 export default {
     name: 'Smain',
     beforeCreate: function(params) {
@@ -78,7 +80,7 @@ export default {
     data() {
         return {
             domainList: [],
-             projectName:
+            projectName:
                 typeof this.$route.params.dp === 'undefined'
                     ? ''
                     : this.$route.params.dp.split('@')[1],
@@ -88,32 +90,34 @@ export default {
                     : this.$route.params.dp.split('@')[0]
         }
     },
-    methods:{
+    methods: {
+        go2Page(path, content) {
+            if (this.domainName != '' && this.projectName != '') {
+                this.$router.push({
+                    path: `${path}/${encodeURIComponent(
+                        this.domainName
+                    )}@${encodeURIComponent(this.projectName)}`
+                })
+            } else {
+                this.$Notice.warning({
+                    title: '注意',
+                    desc:content
+                })
+            }
+        },
         menuAction(name) {
             switch (name) {
                 case '1':
                     break
-                case '2':
-                    this.$router.push({
-                        path: `/defects/${encodeURIComponent(
-                            this.domainName
-                        )}@${encodeURIComponent(this.projectName)}`
-                    })
+                case '2':                   
+                    this.go2Page('/defects','请在切换项目菜单中先选择一个项目')
                     break
-                case '4':
-                    if (this.domainName != '' && this.projectName != '') {
-                        this.$router.push({
-                            path: `/setting/${encodeURIComponent(
-                                this.domainName
-                            )}@${encodeURIComponent(this.projectName)}`
-                        })
-                    } else {
-                        alert('请先选择项目')
-                    }
-
+                case '4':                   
+                    this.go2Page('/setting','请在切换项目菜单中先选择一个项目')
                     break
                 case '5':
-                    logout()
+                    api
+                        .logout()
                         .then(res => {
                             this.$router.push({ path: '/login' })
                         })

@@ -5,12 +5,19 @@
     left: 50%;
     transform: translate(-50%, -50%);
 }
+.bg{
+    background: url('../assets/bg.jpg');
+    background-size: cover;
+    height: 100%;
+}
 .ivu-form-item {
     padding-top: 2.5em;
 }
+
 </style>
 
 <template>
+<div class='bg'>
    <Card class='login-form' style="width: 500px;background:rgba(255,255,255,0.85)!important;">
         <h2 slot="title" >
          <Icon type="locked"></Icon>
@@ -22,7 +29,7 @@
             <Input type="text"  v-model="formCustom.account" ></Input>
         </FormItem>
         <FormItem label="密码" prop="passwd">
-            <Input type="password"  v-model="formCustom.passwd"></Input>
+            <Input type="password"  v-model="formCustom.passwd" @keyup.enter.native="handleSubmit('formCustom')"></Input>
         </FormItem>
        
         <FormItem>
@@ -30,6 +37,7 @@
         </FormItem>
     </Form>
    </Card>
+   </div>
 </template>
 <script>
 import { login, isAuthenticated } from '../qc-api'

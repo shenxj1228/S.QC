@@ -20,7 +20,7 @@
    
 </template>
 <script>
-import { EventBus } from '../event-bus.js'
+import EventBus from '../event-bus.js'
 import api from '../qc-api'
 export default {
     data() {
@@ -44,6 +44,7 @@ export default {
         }
     },
     created: function() {
+        this.emptyProjectWarn()
         this.getFields()
         this.targetKeys = this.getTargetKeys()
         this.pageSize =
@@ -65,6 +66,15 @@ export default {
         EventBus.$off('change-project')
     },
     methods: {
+        emptyProjectWarn() {
+            if (this.domainName == '' || this.projectName == '') {
+                this.$Notice.error({
+                    title: '错误信息',
+                    desc: '请先选择一个项目'
+                })
+                return false
+            }
+        },
         getFields() {
             api
                 .getFields(this.domainName, this.projectName)
@@ -72,7 +82,10 @@ export default {
                     this.fields = data
                 })
                 .catch(err => {
-                    this.$router.push({ path: '/index' })
+                    this.$Notice.error({
+                        title:'错误信息',
+                        desc:'获取项目字段信息出错，请刷新再试！'
+                    })
                 })
         },
         getTargetKeys() {

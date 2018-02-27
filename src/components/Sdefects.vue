@@ -2,11 +2,16 @@
 .ivu-page {
     user-select: none;
 }
+.query-title {
+    padding: 30px;
+    padding-right: 180px;
+    background-color: #bbbec4;
+}
 </style>
 <template>
 
 <div ref="defectview" style="left: 40px;display: block;flex:1">
-   <Form ref="formQuery" :model="formQuery" style="margin:40px;margin-right:180px;" inline :label-width="80">
+   <Form ref="formQuery" :model="formQuery" class="query-title" inline :label-width="80" style="height:20%" >
         <FormItem :prop="column.key" :label="column.title" v-for="(column,index) in columns" :key="index">
         <Select  v-if="column.listId!=''&&column.type.indexOf('List')>-1"  v-model="formQuery[column.key]" style="width:140px">
             <Option v-if="column.listId!=''&&column.type.indexOf('List')>-1" v-for="item in filterList(column.listId)" :value="item" :key="item">{{ item }}
@@ -21,16 +26,16 @@
             <Button type="primary" @click="queryDefect">查 询</Button>
         </FormItem>
     </Form> 
-   <Table :height="tableHeight"  :loading="loading" :data="tableData" :columns="columns" stripe></Table>
+   <Table :height="tableHeight" theme="dark" :loading="loading" :data="tableData" :columns="columns" stripe></Table>
      <div style="margin: 10px;overflow: hidden">
         <div style="float: right;">
-            <Page :total="totNum" :current="1" @on-change="changePage" @on-page-size-change="changePageSize" show-sizer :page-size-opts="[10,20,50,100]" placement="top"></Page>
+            <Page :total="totNum" :current="1" @on-change="changePage" @on-page-size-change="changePageSize" show-sizer :page-size-opts="[10,20,50,100]" placement="top" style="height:10%"></Page>
         </div>
     </div>
     </div>
 </template>
 <script>
-import { EventBus } from '../event-bus'
+import EventBus from '../event-bus'
 import api from '../qc-api'
 
 // Listen for the i-got-clicked event and its payload.
@@ -38,6 +43,7 @@ import api from '../qc-api'
 export default {
     name: 'Sdefects',
     created: function() {
+        this.emptyProjectWarn()
         this.fields =
             localStorage.getItem(
                 `${this.domainName}@${this.projectName}-fileds`
@@ -55,7 +61,11 @@ export default {
                 this.fetchData()
             })
             .catch(err => {
-                console.log(err)
+                this.$Notice.error({
+                    title: '错误信息',
+                    desc: '获取数据字典列表出错，请刷新再试！',
+                    duration: 0
+                })
             })
     },
     mounted: function() {
@@ -65,7 +75,7 @@ export default {
             this.fetchData()
         })
         this.tableHeight =
-            this.$refs.defectview.offsetHeight - 210 || this.tableHeight
+            this.$refs.defectview.offsetHeight * 0.7 || this.tableHeight
     },
     beforeDestory: function(params) {
         EventBus.$off('change-project')
@@ -86,7 +96,8 @@ export default {
             loading: true,
             tableData: [],
             fields: [],
-            queryStr: '',offset: 1,
+            queryStr: '',
+            offset: 1,
             pageSize: 10,
             totNum: 1000,
             columns: [],
@@ -94,6 +105,15 @@ export default {
         }
     },
     methods: {
+        emptyProjectWarn() {
+            if (this.domainName == '' || this.projectName == '') {
+                this.$Notice.error({
+                    title: '错误信息',
+                    desc: '请先选择一个项目'
+                })
+                return false
+            }
+        },
         formatDate(date) {
             const y = date.getFullYear()
             let m = date.getMonth() + 1
@@ -134,7 +154,11 @@ export default {
                     }
                 })
                 .catch(data => {
-                    console.log('获取缺陷列表失败')
+                    this.$Notice.error({
+                        title: '错误信息',
+                        desc: '获取缺陷列表出错，请刷新再试！',
+                        duration: 0
+                    })
                 })
         },
         remoteFilter(value, key, column) {
@@ -142,6 +166,17 @@ export default {
         },
         buildTableColumns() {
             if (this.fields.length === 0) {
+                this.$Modal.warning({
+                    title: '显示字段警告',
+                    content: '当前项目没有设置显示字段,将跳转到设置页面',
+                    onOk: () => {
+                        this.$router.push({
+                            path: `/setting/${this.domainName}@${
+                                this.projectName
+                            }`
+                        })
+                    }
+                })
                 return
             }
             api
@@ -152,11 +187,27 @@ export default {
                             let title = currentValue
                             let type = ''
                             let listId = ''
+                            let width = 0
                             fieldObjs.some(function(v) {
                                 if (v.key === currentValue) {
                                     title = v.label
                                     type = v.type
                                     listId = v.listId
+                                    switch (v.type) {
+                                        case 'Number':
+                                            width = 100
+                                            break
+                                        case 'Date':
+
+                                        case 'DateTime':
+                                            width = 200
+                                            break
+                                        case 'Reference':
+                                            width = 300
+                                            break
+                                        default:
+                                            width = 500
+                                    }
                                     return true
                                 }
                             })
@@ -164,13 +215,18 @@ export default {
                                 title: title,
                                 key: currentValue,
                                 type: type,
-                                listId: listId
+                                listId: listId,
+                                width: width
                             }
                         }
                     )
                 })
                 .catch(res => {
-                    console.log('获取缺陷字段列表失败')
+                    this.$Notice.error({
+                        title: '错误信息',
+                        desc: '获取缺陷字段列表出错，请刷新再试！',
+                        duration: 0
+                    })
                 })
         },
         getLists() {
@@ -181,6 +237,7 @@ export default {
                         resolve(lists)
                     })
                     .catch(err => {
+                        console.log(err)
                         reject(err)
                     })
             })
@@ -190,17 +247,19 @@ export default {
                 let result = this.lists.filter(function(val) {
                     return val.id == id
                 })
+                if (result.length < 1) {
+                    return []
+                }
                 return result[0].items
             } else {
                 return []
             }
         },
-        queryDefect(){
-             Object.keys(this.formQuery).forEach((val,index)=>{
-                 if(Array.isArray(this.formQuery[val])){
-                     
-                 }
-             })
+        queryDefect() {
+            Object.keys(this.formQuery).forEach((val, index) => {
+                if (Array.isArray(this.formQuery[val])) {
+                }
+            })
         }
     }
 }
