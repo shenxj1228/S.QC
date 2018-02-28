@@ -12,7 +12,7 @@ export function getFields(domainName, projectName) {
         let fieldArray = []
         $(res.data)
           .find('Field')
-          .each(function() {
+          .each(function () {
             let vtmp = $(this)
             if (vtmp.find('Active').text() === 'true') {
               let tmpObj = {
@@ -25,6 +25,9 @@ export function getFields(domainName, projectName) {
                 editable: vtmp.find('Editable').text(),
                 verify: vtmp.find('Verify').text(),
                 listId: vtmp.find('List-Id').text() || ''
+              }
+              if (tmpObj.type === 'Memo') {
+                tmpObj.disabled = true;
               }
               fieldArray.push(tmpObj)
             }
@@ -52,16 +55,19 @@ export function isAuthenticated() {
       })
   })
 }
-export function login(user = { account: '', passwd: '' }) {
+export function login(user = {
+  account: '',
+  passwd: ''
+}) {
   return new Promise((resolve, reject) => {
     axios({
-      url: '/qcbin/authentication-point/authenticate',
-      method: 'get',
-      auth: {
-        username: user.account,
-        password: user.passwd
-      }
-    })
+        url: '/qcbin/authentication-point/authenticate',
+        method: 'get',
+        auth: {
+          username: user.account,
+          password: user.passwd
+        }
+      })
       .then(res => {
         if (res.status === 200) {
           resolve('login success')
@@ -102,7 +108,7 @@ export function getDomains() {
         let domainNames = []
         $(res.data)
           .find('Domain')
-          .each(function() {
+          .each(function () {
             let dname = $(this).attr('Name')
             domainNames.push(dname)
           })
@@ -123,7 +129,7 @@ export function getProjects(domainName) {
         let projectNames = []
         $(res.data)
           .find('Project')
-          .each(function() {
+          .each(function () {
             let pname = $(this).attr('Name')
             projectNames.push(pname)
           })
@@ -144,7 +150,7 @@ export function getLists(domainName, projectName) {
       )
       .then(res => {
         let lists = []
-        $(res.data).find('List').each(function() {
+        $(res.data).find('List').each(function () {
           let id = $(this)
             .find('Id')
             .text()
@@ -154,10 +160,14 @@ export function getLists(domainName, projectName) {
           let items = []
           $(this)
             .find('Item')
-            .each(function() {
+            .each(function () {
               items.push($(this).attr('Value'))
             })
-          lists.push({ id: id, name: name, items: items })
+          lists.push({
+            id: id,
+            name: name,
+            items: items
+          })
         })
         resolve(lists)
       })
@@ -189,13 +199,13 @@ export function getDefects(
         let returnNum = 0
         $(res.data)
           .find('Entity')
-          .each(function() {
+          .each(function () {
             let entityData = {}
             fields.forEach((item, index) => {
               if (
                 $(this)
-                  .find(`Field[Name=${item}]`)
-                  .find('Value').length == 0
+                .find(`Field[Name=${item}]`)
+                .find('Value').length == 0
               ) {
                 entityData[item] = ''
               } else {
