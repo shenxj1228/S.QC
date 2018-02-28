@@ -1,38 +1,83 @@
 <style scoped>
+::-webkit-scrollbar
+{
+  width: 5px;
+  height: 5px;
+  background-color: #F5F5F5;
+}
+/*定义滚动条轨道 内阴影+圆角*/ 
+::-webkit-scrollbar-track
+{
+  -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+  border-radius: 5px;
+  background-color: #F5F5F5;
+}
+/*定义滑块 内阴影+圆角*/  
+::-webkit-scrollbar-thumb
+{
+  border-radius: 2px;
+  -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,.3);
+  background-color:#5cadff;
+}
+
 .ivu-page {
     user-select: none;
 }
-.query-title {
-    padding: 30px;
-    padding-right: 180px;
+.slider-left {
     background-color: #bbbec4;
+    padding-bottom: 40px;
+}
+.ivu-layout-sider-collapsed .ivu-form.ivu-form-label-right {
+    width: 0px !important;
+    transition: width 0.2s ease;
+}
+.ivu-layout-sider-collapsed .ivu-form.ivu-form-label-right {
+    overflow: hidden;
+}
+.ivu-form.ivu-form-label-right {
+    overflow-y: auto;
+    height: 100%;
+    padding-top: 20px;
+}
+.ivu-table-body {
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 </style>
 <template>
-
-<div ref="defectview" style="left: 40px;display: block;flex:1">
-   <Form ref="formQuery" :model="formQuery" class="query-title" inline :label-width="80" style="height:20%" >
-        <FormItem :prop="column.key" :label="column.title" v-for="(column,index) in columns" :key="index">
-        <Select  v-if="column.listId!=''&&column.type.indexOf('List')>-1"  v-model="formQuery[column.key]" style="width:140px">
-            <Option v-if="column.listId!=''&&column.type.indexOf('List')>-1" v-for="item in filterList(column.listId)" :value="item" :key="item">{{ item }}
+    <Layout ref="layout">
+    <Sider ref="sider" width="320"  class="slider-left"  style="" collapsible @on-collapse="onCollapse">
+        <Form ref="formQuery" :model="formQuery" style="" :label-width="100"  label-position="right">
+        <FormItem :prop="condition.key" :label="condition.title" v-for="(condition,index) in queryCondition" :key="index">
+        <Select  v-if="condition.listId!=''&&condition.type.indexOf('List')>-1"  v-model="formQuery[condition.key]" :style="{width:condition.width+'px'}" clearable>
+            <Option v-if="condition.listId!=''&&condition.type.indexOf('List')>-1" v-for="item in filterList(condition.listId)" :value="item" :key="item">{{ item }}
         </Option>
         </Select>
-        <DatePicker v-else-if="column.type==='Date'" v-model="formQuery[column.key]" type="daterange" placement="bottom-start" placeholder="选择日期" format="yyyy年MM月dd日" style="width: 240px"></DatePicker>
-        <TimePicker type="timerange" placement="bottom-start" v-model="formQuery[column.key]"  v-else-if="column.type==='DateTime'" format="HH时mm分" placeholder="选择时间" style="width: 112px"></TimePicker>
-        <Input v-else type="text" v-model="formQuery[column.key]" style="width:300px;"  clearable>                
+        <DatePicker  :transfer="(1===1)" v-else-if="condition.type.indexOf('Date')>-1" confirm v-model="formQuery[condition.key]" type="daterange" placement="right-start"
+             placeholder="选择日期" format="yyyy-MM-dd" :style="{width:condition.width+'px'}"></DatePicker>
+        <Input v-else type="text" v-model="formQuery[condition.key]"  :style="{width:condition.width+'px'}"  clearable>                
             </Input>
         </FormItem>       
         <FormItem style="display:block;">
             <Button type="primary" @click="queryDefect">查 询</Button>
         </FormItem>
     </Form> 
-   <Table :height="tableHeight" theme="dark" :loading="loading" :data="tableData" :columns="columns" stripe></Table>
-     <div style="margin: 10px;overflow: hidden">
+    </Sider>
+    <Layout ref="tableOut">
+        <Content>
+            <Table :height="table.height" :width="table.width"  :loading="loading" :data="tableData" :columns="columns" stripe ></Table>
+        </Content>
+        <Footer ref="page">
+            <div style="margin: 10px;overflow: hidden">
         <div style="float: right;">
-            <Page :total="totNum" :current="1" @on-change="changePage" @on-page-size-change="changePageSize" show-sizer :page-size-opts="[10,20,50,100]" placement="top" style="height:10%"></Page>
+            <Page :total="totNum" show-total :current="1" @on-change="changePage" @on-page-size-change="changePageSize" show-sizer :page-size-opts="[10,20,50,100]" placement="top" style="height:10%"></Page>
         </div>
     </div>
-    </div>
+            </Footer>        
+   
+     
+    </Layout>
+    </Layout>
 </template>
 <script>
 import EventBus from '../event-bus'
@@ -44,14 +89,24 @@ export default {
     name: 'Sdefects',
     created: function() {
         this.emptyProjectWarn()
-        this.fields =
+        this.resultFields =
             localStorage.getItem(
-                `${this.domainName}@${this.projectName}-fileds`
+                `${this.domainName}@${this.projectName}-resultFields`
             ) === null
                 ? []
                 : JSON.parse(
                       localStorage.getItem(
-                          `${this.domainName}@${this.projectName}-fileds`
+                          `${this.domainName}@${this.projectName}-resultFields`
+                      )
+                  )
+        this.searchFields =
+            localStorage.getItem(
+                `${this.domainName}@${this.projectName}-searchFields`
+            ) === null
+                ? []
+                : JSON.parse(
+                      localStorage.getItem(
+                          `${this.domainName}@${this.projectName}-searchFields`
                       )
                   )
         this.getLists()
@@ -74,8 +129,12 @@ export default {
             this.projectName = projectName
             this.fetchData()
         })
-        this.tableHeight =
-            this.$refs.defectview.offsetHeight * 0.7 || this.tableHeight
+        this.table.height =
+            this.$refs.layout.$el.offsetHeight -
+            this.$refs.page.$el.offsetHeight
+        this.table.width =
+            this.$refs.layout.$el.offsetWidth - this.$refs.sider.$el.offsetWidth
+        //  this.$refs.layout.$el.offsetWidth - this.$refs.sider.$el.offsetWidth
     },
     beforeDestory: function(params) {
         EventBus.$off('change-project')
@@ -84,7 +143,7 @@ export default {
     data() {
         return {
             formQuery: {},
-            tableHeight: 400,
+            queryCondition: {},
             domainName:
                 typeof this.$route.params.dp === 'undefined'
                     ? ''
@@ -101,7 +160,8 @@ export default {
             pageSize: 10,
             totNum: 1000,
             columns: [],
-            lists: []
+            lists: [],
+            table: { height: '', width: '' }
         }
     },
     methods: {
@@ -133,7 +193,7 @@ export default {
             this.fetchData(true)
         },
         fetchData(isChangePage = false) {
-            if (this.fields.length === 0) {
+            if (this.resultFields.length === 0) {
                 return
             }
             this.loading = true
@@ -141,7 +201,7 @@ export default {
                 .getDefects(
                     this.domainName,
                     this.projectName,
-                    this.fields,
+                    this.resultFields,
                     this.queryStr,
                     this.offset,
                     this.pageSize
@@ -165,7 +225,7 @@ export default {
             fetchData()
         },
         buildTableColumns() {
-            if (this.fields.length === 0) {
+            if (this.resultFields.length === 0) {
                 this.$Modal.warning({
                     title: '显示字段警告',
                     content: '当前项目没有设置显示字段,将跳转到设置页面',
@@ -182,12 +242,31 @@ export default {
             api
                 .getFields(this.domainName, this.projectName)
                 .then(fieldObjs => {
-                    this.columns = this.fields.map(
+                    this.columns = this.resultFields.map(
+                        (currentValue, index, array) => {
+                            let title = currentValue
+                            let type = ''
+                            fieldObjs.some(function(v) {
+                                if (v.key === currentValue) {
+                                    title = v.label
+                                    type = v.type
+                                    return true
+                                }
+                            })
+
+                            return {
+                                title: title,
+                                key: currentValue,
+                                type: type
+                            }
+                        }
+                    )
+                    this.queryCondition = this.searchFields.map(
                         (currentValue, index, array) => {
                             let title = currentValue
                             let type = ''
                             let listId = ''
-                            let width = 0
+                            let width = 500
                             fieldObjs.some(function(v) {
                                 if (v.key === currentValue) {
                                     title = v.label
@@ -195,22 +274,30 @@ export default {
                                     listId = v.listId
                                     switch (v.type) {
                                         case 'Number':
-                                            width = 100
+                                            width = 80
                                             break
                                         case 'Date':
-
+                                            width = 200
+                                            break
                                         case 'DateTime':
                                             width = 200
                                             break
+                                        case 'UsersList':
+                                            width = 200
+                                            break
+                                        case 'LookupList':
+                                            width = 200
+                                            break
                                         case 'Reference':
-                                            width = 300
+                                            width = 200
                                             break
                                         default:
-                                            width = 500
+                                            width = 220
                                     }
                                     return true
                                 }
                             })
+
                             return {
                                 title: title,
                                 key: currentValue,
@@ -256,10 +343,45 @@ export default {
             }
         },
         queryDefect() {
+            let queryStr = ''
             Object.keys(this.formQuery).forEach((val, index) => {
                 if (Array.isArray(this.formQuery[val])) {
+                    if (
+                        this.formQuery[val][0] != '' &&
+                        this.formQuery[val][1] != ''
+                    ) {
+                        let startDate = this.formQuery[val][0]
+                            .toLocaleDateString()
+                            .replace(/\//g, '-')
+                        let endDate = this.formQuery[val][1]
+                            .toLocaleDateString()
+                            .replace(/\//g, '-')
+                        queryStr =
+                            queryStr +
+                            `${val}[>='${startDate}' And <='${endDate}'];`
+                    }
+                } else {
+                    if (this.formQuery[val].trim() != '')
+                        queryStr = queryStr + `${val}[${this.formQuery[val]}];`
                 }
             })
+            if (queryStr.endsWith(';')) {
+                queryStr = queryStr.substring(0, queryStr.length - 1)
+            }
+            console.log(queryStr)
+            this.queryStr = queryStr
+            this.fetchData()
+        },
+        onCollapse(boolean) {
+            console.log(boolean)
+            if (boolean) {
+                setTimeout(() => {
+                    this.table.width = this.$refs.tableOut.$el.offsetWidth
+                }, 1000)
+            }
+        },
+        timeChange(val) {
+            console.log(val)
         }
     }
 }

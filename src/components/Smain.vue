@@ -34,8 +34,9 @@
       </div>
     </Menu>
     </Header>
+    
     <Content style="display:flex;flex-direction:column" ><router-view/></Content>
-    <Footer >footer</Footer>  
+  
   </Layout>
   </div>
 </template>
