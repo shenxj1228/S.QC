@@ -76,7 +76,7 @@ export default {
   data() {
     return {
       current: 0,
-      speed: 4000,
+      speed: 6000,
       carouselHeight: 800
     };
   }
