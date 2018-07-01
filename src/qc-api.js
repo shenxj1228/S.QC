@@ -2,17 +2,17 @@ import $ from 'jquery'
 import axios from 'axios'
 axios.defaults.withCredentials = true
 
-export function getFields(domainName, projectName) {
+export function getFields(domainName, projectName, queryParam = '') {
   return new Promise((resolve, reject) => {
     axios
       .get(
-        `/qcbin/rest/domains/${domainName}/projects/${projectName}/customization/entities/defect/fields`
+        `/qcbin/rest/domains/${domainName}/projects/${projectName}/customization/entities/defect/fields?${queryParam}`
       )
       .then(res => {
         let fieldArray = []
         $(res.data)
           .find('Field')
-          .each(function () {
+          .each(function() {
             let vtmp = $(this)
             if (vtmp.find('Active').text() === 'true') {
               let tmpObj = {
@@ -23,11 +23,12 @@ export function getFields(domainName, projectName) {
                 type: vtmp.find('Type').text(),
                 active: vtmp.find('Active').text(),
                 editable: vtmp.find('Editable').text(),
+                history: vtmp.find('History').text(),
                 verify: vtmp.find('Verify').text(),
                 listId: vtmp.find('List-Id').text() || ''
               }
               if (tmpObj.type === 'Memo') {
-                tmpObj.disabled = true;
+                tmpObj.disabled = true
               }
               fieldArray.push(tmpObj)
             }
@@ -35,7 +36,7 @@ export function getFields(domainName, projectName) {
         resolve(fieldArray)
       })
       .catch(err => {
-        reject('get fields fail')
+        reject(err)
         console.log('get fields fail：')
         console.log(err)
       })
@@ -49,36 +50,38 @@ export function isAuthenticated() {
         resolve('is login')
       })
       .catch(err => {
-        reject('no login')
+        reject(err)
         console.log('no login:')
         console.log(err)
       })
   })
 }
-export function login(user = {
-  account: '',
-  passwd: ''
-}) {
+export function login(
+  user = {
+    account: '',
+    passwd: ''
+  }
+) {
   return new Promise((resolve, reject) => {
     axios({
-        url: '/qcbin/authentication-point/authenticate',
-        method: 'get',
-        auth: {
-          username: user.account,
-          password: user.passwd
-        }
-      })
+      url: '/qcbin/authentication-point/authenticate',
+      method: 'get',
+      auth: {
+        username: user.account,
+        password: user.passwd
+      }
+    })
       .then(res => {
         if (res.status === 200) {
           resolve('login success')
         } else {
-          reject('login fail')
+          reject(res)
           console.log('login fail:')
           console.log(res)
         }
       })
       .catch(err => {
-        reject('login fail')
+        reject(err)
         console.log('login fail:')
         console.log(err)
       })
@@ -108,14 +111,14 @@ export function getDomains() {
         let domainNames = []
         $(res.data)
           .find('Domain')
-          .each(function () {
+          .each(function() {
             let dname = $(this).attr('Name')
             domainNames.push(dname)
           })
         resolve(domainNames)
       })
       .catch(err => {
-        reject('get domains fail')
+        reject(err)
         console.log('get domains fail:')
         console.log(err)
       })
@@ -129,19 +132,44 @@ export function getProjects(domainName) {
         let projectNames = []
         $(res.data)
           .find('Project')
-          .each(function () {
+          .each(function() {
             let pname = $(this).attr('Name')
             projectNames.push(pname)
           })
         resolve(projectNames)
       })
       .catch(err => {
-        reject('get projectNames fail')
+        reject(err)
         console.log('get projectNames fail：')
         console.log(err)
       })
   })
 }
+export function getUsers(domainName, projectName, queryParam='') {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(
+        `/qcbin/rest/domains/${domainName}/projects/${projectName}/customization/users?${queryParam}`
+      )
+      .then(res => {
+        let users = []
+        $(res.data)
+          .find('User')
+          .each(function() {
+            let name = $(this).attr('Name')
+            let fullname = $(this).attr('FullName')
+            users.push({ name: name, fullname: fullname })
+          })
+        resolve(users)
+      })
+      .catch(err => {
+        reject(err)
+        console.log('get projectNames fail：')
+        console.log(err)
+      })
+  })
+}
+
 export function getLists(domainName, projectName) {
   return new Promise((resolve, reject) => {
     axios
@@ -150,31 +178,33 @@ export function getLists(domainName, projectName) {
       )
       .then(res => {
         let lists = []
-        $(res.data).find('List').each(function () {
-          let id = $(this)
-            .find('Id')
-            .text()
-          let name = $(this)
-            .find('Name')
-            .text()
-          let items = []
-          $(this)
-            .find('Item')
-            .each(function () {
-              items.push($(this).attr('Value'))
+        $(res.data)
+          .find('List')
+          .each(function() {
+            let id = $(this)
+              .find('Id')
+              .text()
+            let name = $(this)
+              .find('Name')
+              .text()
+            let items = []
+            $(this)
+              .find('Item')
+              .each(function() {
+                items.push($(this).attr('Value'))
+              })
+            lists.push({
+              id: id,
+              name: name,
+              items: items
             })
-          lists.push({
-            id: id,
-            name: name,
-            items: items
           })
-        })
         resolve(lists)
       })
       .catch(err => {
         console.log('get lists fail:')
         console.log(err)
-        reject('get lists fail')
+        reject(err)
       })
   })
 }
@@ -199,13 +229,13 @@ export function getDefects(
         let returnNum = 0
         $(res.data)
           .find('Entity')
-          .each(function () {
+          .each(function() {
             let entityData = {}
             fields.forEach((item, index) => {
               if (
                 $(this)
-                .find(`Field[Name=${item}]`)
-                .find('Value').length == 0
+                  .find(`Field[Name=${item}]`)
+                  .find('Value').length == 0
               ) {
                 entityData[item] = ''
               } else {
@@ -225,7 +255,7 @@ export function getDefects(
         })
       })
       .catch(err => {
-        reject('get defects fail')
+        reject(err)
         console.log('get defects fail:')
         console.log(err)
       })
@@ -239,5 +269,6 @@ export default {
   getDefects: getDefects,
   login: login,
   logout: logout,
-  getLists: getLists
+  getLists: getLists,
+  getUsers: getUsers
 }
