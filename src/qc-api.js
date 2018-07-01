@@ -181,7 +181,7 @@ export function getLists(domainName, projectName) {
 export function getDefects(
   domainName,
   projectName,
-  fields = ['id', 'subject'],
+  fields = ['id', 'name'],
   query = '',
   offset = 1,
   queryNum = 20
